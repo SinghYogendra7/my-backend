@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
@@ -6,12 +8,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Connect to InfinityFree MySQL
+// ✅ Connect to Railway MySQL
 const db = mysql.createConnection({
-  host: 'sql309.infinityfree.com',
-  user: 'if0_39596976',
-  password: 'FSI3VhVosFw', // 🔒 Replace this with your actual vPanel password
-  database: 'if0_39596976_myapp'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.PORT // This is the MySQL port (usually 3306)
 });
 
 db.connect(err => {
@@ -19,7 +22,7 @@ db.connect(err => {
     console.error('❌ DB connection failed:', err);
     return;
   }
-  console.log('✅ Connected to InfinityFree MySQL');
+  console.log('✅ Connected to Railway MySQL');
 });
 
 // 📥 Get all users
@@ -44,6 +47,7 @@ app.post('/api/users', (req, res) => {
 });
 
 // 🚀 Start server
-app.listen(5000, () => {
-  console.log('🚀 Server running at http://localhost:5000');
+const PORT = process.env.APP_PORT || 5000; // Optional: add APP_PORT in your .env
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
