@@ -2,7 +2,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-// 🔍 Debug: Show loaded environment variabless
+// 🔍 Debug: Show loaded environment variables
 console.log('🔧 Loaded env vars:');
 console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_USER:', process.env.DB_USER);
