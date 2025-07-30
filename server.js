@@ -29,6 +29,7 @@ dns.lookup(process.env.DB_HOST, (err, address) => {
 });
 
 // 🔌 DB Connection
+console.log('🔧 Connecting to DB with host:', process.env.DB_HOST);
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
