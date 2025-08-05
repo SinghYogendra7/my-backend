@@ -2,24 +2,22 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-// 🔍 Debug: Show loaded environment variables
-console.log('🔧 Loaded env vars:');
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '*****' : null);
-console.log('DB_NAME:', process.env.DB_NAME);
-console.log('DB_PORT:', process.env.DB_PORT);
-
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const dns = require('dns');
 
 const app = express();
-app.use(cors());
+
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// 🌐 DNS Test
+// Optional: DNS lookup to verify DB host resolves
 dns.lookup(process.env.DB_HOST, (err, address) => {
   if (err) {
     console.error('🌐 DNS lookup failed:', err);
@@ -28,10 +26,9 @@ dns.lookup(process.env.DB_HOST, (err, address) => {
   }
 });
 
-// 🔌 DB Connection
-console.log('🔧 Connecting to DB with host:', process.env.DB_HOST);
+// Connect to TiDB Cloud MySQL-compatible server
 const db = mysql.createConnection({
-  host: 'interchange.proxy.rlwy.net',
+  host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
@@ -41,15 +38,15 @@ const db = mysql.createConnection({
 db.connect(err => {
   if (err) {
     console.error('❌ DB connection failed:', err.message);
-    return;
+    process.exit(1); // Exit if DB connection fails
   }
-  console.log('✅ Connected to Railway MySQL');
+  console.log('✅ Connected to TiDB Cloud MySQL');
 });
 
-// 🛠️ Routes
+// Routes
 app.get('/api/users', (req, res) => {
   db.query('SELECT * FROM users', (err, results) => {
-    if (err) return res.status(500).json({ error: err });
+    if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
 });
@@ -60,14 +57,14 @@ app.post('/api/users', (req, res) => {
     'INSERT INTO users (name, email) VALUES (?, ?)',
     [name, email],
     (err, result) => {
-      if (err) return res.status(500).json({ error: err });
+      if (err) return res.status(500).json({ error: err.message });
       res.json({ id: result.insertId, name, email });
     }
   );
 });
 
-// 🚀 Start Server
+// Start server
 const PORT = process.env.APP_PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
